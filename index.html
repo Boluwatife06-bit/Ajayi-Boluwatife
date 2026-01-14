@@ -1,0 +1,1516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajayi Boluwatife | Cybersecurity Portfolio</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔒</text></svg>">
+    <style>
+        :root {
+            --glass-color: rgba(20, 25, 35, 0.7);
+            --glass-border: rgba(0, 255, 100, 0.2);
+            --glass-highlight: rgba(0, 255, 100, 0.1);
+            --glass-shadow: rgba(0, 0, 0, 0.3);
+            --accent-color: #00ff88;
+            --accent-light: #33ffaa;
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.8);
+            --taskbar-height: 48px;
+            --start-menu-width: 450px;
+            --window-border-radius: 8px;
+            --matrix-green: #00ff41;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        
+        body {
+            background: #0a0f18;
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+            user-select: none;
+        }
+        
+        #matrixCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        /* Liquid Glass Effect Base */
+        .glass {
+            background: var(--glass-color);
+            backdrop-filter: blur(15px) saturate(180%);
+            -webkit-backdrop-filter: blur(15px) saturate(180%);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--window-border-radius);
+            box-shadow: 
+                0 8px 32px var(--glass-shadow),
+                inset 0 1px 0 var(--glass-highlight);
+        }
+        
+        .glass::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 30%;
+            background: linear-gradient(to bottom, rgba(0, 255, 100, 0.05), transparent);
+            border-radius: var(--window-border-radius) var(--window-border-radius) 0 0;
+            pointer-events: none;
+        }
+        
+        /* Lock Screen */
+        .lock-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 10, 15, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 1s ease, transform 1s ease;
+        }
+        
+        .lock-screen.hidden {
+            opacity: 0;
+            transform: translateY(-100%);
+            pointer-events: none;
+        }
+        
+        .lock-time {
+            font-size: 5.5rem;
+            font-weight: 300;
+            margin-bottom: 0.5rem;
+            color: var(--matrix-green);
+            text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+            font-family: 'Courier New', monospace;
+        }
+        
+        .lock-date {
+            font-size: 1.6rem;
+            font-weight: 300;
+            margin-bottom: 3rem;
+            opacity: 0.9;
+            color: #cccccc;
+        }
+        
+        .unlock-hint {
+            font-size: 1.2rem;
+            padding: 12px 32px;
+            background: rgba(0, 255, 100, 0.1);
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid rgba(0, 255, 100, 0.3);
+            color: var(--matrix-green);
+            font-family: 'Segoe UI', sans-serif;
+        }
+        
+        .unlock-hint:hover {
+            background: rgba(0, 255, 100, 0.2);
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(0, 255, 100, 0.3);
+        }
+        
+        /* Welcome Screen */
+        .welcome-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 15, 25, 0.98);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            transition: opacity 1s ease, transform 1s ease;
+        }
+        
+        .welcome-screen.hidden {
+            opacity: 0;
+            transform: translateY(-100%);
+            pointer-events: none;
+        }
+        
+        .welcome-logo {
+            font-size: 4.5rem;
+            margin-bottom: 2rem;
+            color: var(--matrix-green);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.7; transform: scale(1); text-shadow: 0 0 5px var(--matrix-green); }
+            50% { opacity: 1; transform: scale(1.05); text-shadow: 0 0 15px var(--matrix-green); }
+            100% { opacity: 0.7; transform: scale(1); text-shadow: 0 0 5px var(--matrix-green); }
+        }
+        
+        .welcome-text {
+            font-size: 2.8rem;
+            margin-bottom: 1rem;
+            font-weight: 300;
+            color: white;
+            text-align: center;
+        }
+        
+        .welcome-subtext {
+            font-size: 1.3rem;
+            opacity: 0.8;
+            margin-bottom: 3rem;
+            color: #cccccc;
+            text-align: center;
+            max-width: 600px;
+            line-height: 1.5;
+        }
+        
+        .welcome-subtext strong {
+            color: var(--matrix-green);
+            font-weight: 500;
+        }
+        
+        .loading-bar {
+            width: 350px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 2rem;
+        }
+        
+        .loading-progress {
+            height: 100%;
+            width: 0%;
+            background: var(--matrix-green);
+            border-radius: 2px;
+            transition: width 0.3s;
+            box-shadow: 0 0 10px var(--matrix-green);
+        }
+        
+        /* Desktop */
+        .desktop {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: calc(100% - var(--taskbar-height));
+            padding: 25px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, 100px);
+            grid-auto-rows: 100px;
+            grid-gap: 30px;
+            align-content: start;
+            overflow: hidden;
+        }
+        
+        /* Desktop Icons */
+        .desktop-icon {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100px;
+            height: 100px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 8px;
+            position: relative;
+        }
+        
+        .desktop-icon:hover {
+            background: rgba(0, 255, 100, 0.05);
+            transform: translateY(-5px);
+        }
+        
+        .desktop-icon.selected {
+            background: rgba(0, 255, 100, 0.1);
+            border: 1px solid rgba(0, 255, 100, 0.3);
+        }
+        
+        .icon-image {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            color: var(--matrix-green);
+        }
+        
+        .icon-name {
+            font-size: 0.85rem;
+            text-align: center;
+            color: white;
+            word-break: break-word;
+            max-width: 100%;
+        }
+        
+        /* Windows */
+        .window {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 700px;
+            min-height: 500px;
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+        }
+        
+        .window.active {
+            display: flex;
+        }
+        
+        .window-header {
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0, 255, 100, 0.1);
+            border-radius: var(--window-border-radius) var(--window-border-radius) 0 0;
+            cursor: move;
+        }
+        
+        .window-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+        }
+        
+        .window-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .window-control {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        .window-close {
+            background: #ff5f57;
+        }
+        
+        .window-minimize {
+            background: #ffbd2e;
+        }
+        
+        .window-maximize {
+            background: #28ca42;
+        }
+        
+        .window-content {
+            padding: 25px;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        
+        .project-details h3 {
+            color: var(--matrix-green);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+            border-bottom: 1px solid rgba(0, 255, 100, 0.2);
+            padding-bottom: 8px;
+        }
+        
+        .project-details p {
+            line-height: 1.6;
+            margin-bottom: 20px;
+            color: var(--text-secondary);
+        }
+        
+        .tools-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 15px 0 25px;
+        }
+        
+        .tool-tag {
+            background: rgba(0, 255, 100, 0.1);
+            border: 1px solid rgba(0, 255, 100, 0.2);
+            color: var(--matrix-green);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+        
+        .github-button {
+            background: rgba(0, 255, 100, 0.15);
+            border: 1px solid var(--matrix-green);
+            color: var(--matrix-green);
+            padding: 10px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        
+        .github-button:hover {
+            background: rgba(0, 255, 100, 0.25);
+            box-shadow: 0 0 15px rgba(0, 255, 100, 0.3);
+        }
+        
+        /* Taskbar */
+        .taskbar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: var(--taskbar-height);
+            background: rgba(15, 20, 30, 0.85);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(0, 255, 100, 0.1);
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            z-index: 500;
+        }
+        
+        .start-button {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background 0.2s;
+        }
+        
+        .start-button:hover {
+            background: rgba(0, 255, 100, 0.1);
+        }
+        
+        .start-icon {
+            font-size: 1.5rem;
+            color: var(--matrix-green);
+        }
+        
+        .start-text {
+            font-weight: 500;
+            font-size: 1.1rem;
+        }
+        
+        .taskbar-apps {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-left: 20px;
+        }
+        
+        .taskbar-app {
+            padding: 8px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .taskbar-app:hover {
+            background: rgba(0, 255, 100, 0.1);
+        }
+        
+        .taskbar-app.active {
+            background: rgba(0, 255, 100, 0.15);
+            border-bottom: 2px solid var(--matrix-green);
+        }
+        
+        .time-display {
+            margin-left: auto;
+            padding: 0 15px;
+            font-size: 0.9rem;
+            color: #cccccc;
+        }
+        
+        /* Start Menu */
+        .start-menu {
+            position: absolute;
+            bottom: var(--taskbar-height);
+            left: 0;
+            width: var(--start-menu-width);
+            height: 600px;
+            z-index: 400;
+            display: none;
+            overflow: hidden;
+        }
+        
+        .start-menu.active {
+            display: block;
+        }
+        
+        .start-menu-content {
+            display: flex;
+            height: 100%;
+        }
+        
+        .start-menu-sidebar {
+            width: 70px;
+            background: rgba(10, 15, 25, 0.9);
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 25px;
+        }
+        
+        .start-menu-main {
+            flex-grow: 1;
+            padding: 25px;
+            overflow-y: auto;
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(0, 255, 100, 0.1);
+        }
+        
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0a0f18, #00ff88);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .user-info h3 {
+            font-size: 1.4rem;
+            margin-bottom: 5px;
+            color: white;
+        }
+        
+        .user-info p {
+            color: var(--matrix-green);
+            font-size: 0.95rem;
+        }
+        
+        .menu-section {
+            margin-bottom: 30px;
+        }
+        
+        .menu-section h4 {
+            color: var(--matrix-green);
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .skills-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .skill-tag {
+            background: rgba(0, 255, 100, 0.08);
+            border: 1px solid rgba(0, 255, 100, 0.15);
+            color: #cccccc;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+        
+        /* Apps */
+        .app-window {
+            position: absolute;
+            width: 800px;
+            height: 600px;
+            z-index: 200;
+            display: none;
+        }
+        
+        .app-window.active {
+            display: flex;
+        }
+        
+        .notes-app textarea {
+            width: 100%;
+            height: 400px;
+            background: rgba(15, 20, 30, 0.7);
+            border: 1px solid rgba(0, 255, 100, 0.2);
+            border-radius: 5px;
+            color: white;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            resize: none;
+        }
+        
+        .terminal-app .window-content {
+            background: #0a0f18;
+            font-family: 'Courier New', monospace;
+            padding: 15px;
+        }
+        
+        .terminal-output {
+            height: 400px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            color: var(--matrix-green);
+            line-height: 1.4;
+        }
+        
+        .terminal-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .terminal-prompt {
+            color: var(--matrix-green);
+        }
+        
+        .terminal-input input {
+            flex-grow: 1;
+            background: transparent;
+            border: none;
+            color: white;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            outline: none;
+        }
+        
+        .browser-app iframe {
+            width: 100%;
+            height: 450px;
+            border: none;
+            background: white;
+            border-radius: 5px;
+        }
+        
+        .browser-url-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .browser-url-bar input {
+            flex-grow: 1;
+            background: rgba(15, 20, 30, 0.7);
+            border: 1px solid rgba(0, 255, 100, 0.2);
+            border-radius: 5px;
+            color: white;
+            padding: 8px 15px;
+        }
+        
+        .browser-go-button {
+            background: rgba(0, 255, 100, 0.15);
+            border: 1px solid var(--matrix-green);
+            color: var(--matrix-green);
+            padding: 8px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .window {
+                width: 90%;
+            }
+            
+            .desktop {
+                grid-template-columns: repeat(auto-fill, 90px);
+                grid-gap: 20px;
+            }
+            
+            .desktop-icon {
+                width: 90px;
+                height: 90px;
+            }
+        }
+        
+        @media (max-height: 768px) {
+            .desktop {
+                height: calc(100% - 40px);
+            }
+            
+            .taskbar {
+                height: 40px;
+            }
+            
+            .start-menu {
+                height: 500px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Matrix Code Background -->
+    <canvas id="matrixCanvas"></canvas>
+    
+    <!-- Lock Screen -->
+    <div class="lock-screen glass" id="lockScreen">
+        <div class="lock-time" id="lockTime">22:10</div>
+        <div class="lock-date" id="lockDate">Saturday, June 15</div>
+        <div class="unlock-hint" id="unlockHint">
+            <i class="fas fa-arrow-down"></i> Click to access portfolio
+        </div>
+    </div>
+    
+    <!-- Welcome Screen -->
+    <div class="welcome-screen glass" id="welcomeScreen">
+        <div class="welcome-logo">
+            <i class="fas fa-shield-alt"></i>
+        </div>
+        <div class="welcome-text">Ajayi Boluwatife</div>
+        <div class="welcome-subtext">
+            <strong>Offensive Security Pentester</strong><br>
+            Securing systems, testing vulnerabilities, and strengthening digital infrastructures
+        </div>
+        <div class="loading-bar">
+            <div class="loading-progress" id="loadingProgress"></div>
+        </div>
+    </div>
+    
+    <!-- Desktop -->
+    <div class="desktop" id="desktop">
+        <!-- Desktop Icons for Projects -->
+        <div class="desktop-icon" id="project1" data-window="project1Window">
+            <div class="icon-image">
+                <i class="fas fa-server"></i>
+            </div>
+            <div class="icon-name">Ubuntu Server Security</div>
+        </div>
+        
+        <div class="desktop-icon" id="project2" data-window="project2Window">
+            <div class="icon-image">
+                <i class="fas fa-key"></i>
+            </div>
+            <div class="icon-name">SSH Brute Force Simulation</div>
+        </div>
+        
+        <div class="desktop-icon" id="project3" data-window="project3Window">
+            <div class="icon-image">
+                <i class="fas fa-globe"></i>
+            </div>
+            <div class="icon-name">Web App Penetration Test</div>
+        </div>
+        
+        <div class="desktop-icon" id="project4" data-window="project4Window">
+            <div class="icon-image">
+                <i class="fas fa-robot"></i>
+            </div>
+            <div class="icon-name">AI Vulnerability Scanner</div>
+        </div>
+        
+        <div class="desktop-icon" id="project5" data-window="project5Window">
+            <div class="icon-image">
+                <i class="fas fa-terminal"></i>
+            </div>
+            <div class="icon-name">J.A.R.V.I.S AI Terminal</div>
+        </div>
+        
+        <div class="desktop-icon" id="project6" data-window="notesWindow">
+            <div class="icon-image">
+                <i class="fas fa-sticky-note"></i>
+            </div>
+            <div class="icon-name">Notes</div>
+        </div>
+        
+        <div class="desktop-icon" id="project7" data-window="terminalWindow">
+            <div class="icon-image">
+                <i class="fas fa-code"></i>
+            </div>
+            <div class="icon-name">Terminal</div>
+        </div>
+        
+        <div class="desktop-icon" id="project8" data-window="browserWindow">
+            <div class="icon-image">
+                <i class="fas fa-compass"></i>
+            </div>
+            <div class="icon-name">Browser</div>
+        </div>
+    </div>
+    
+    <!-- Project Windows -->
+    <div class="window glass" id="project1Window">
+        <div class="window-header">
+            <div class="window-title">
+                <i class="fas fa-server"></i>
+                <span>Ubuntu Server Build & Security</span>
+            </div>
+            <div class="window-controls">
+                <div class="window-control window-minimize" data-window="project1Window"></div>
+                <div class="window-control window-maximize"></div>
+                <div class="window-control window-close" data-window="project1Window"></div>
+            </div>
+        </div>
+        <div class="window-content">
+            <div class="project-details">
+                <h3>Ubuntu Server Build & Security</h3>
+                <p>Built and secured an Ubuntu server from the ground up, applying best practices in system hardening, user access control, and performance optimization. Implemented firewall rules, SSH hardening, and Fail2Ban for brute-force protection. Strengthened practical expertise in Linux administration and real-world cybersecurity defenses.</p>
+                
+                <h4>Tools Used:</h4>
+                <div class="tools-list">
+                    <span class="tool-tag">Ubuntu Server</span>
+                    <span class="tool-tag">UFW</span>
+                    <span class="tool-tag">SSH Hardening</span>
+                    <span class="tool-tag">Fail2Ban</span>
+                    <span class="tool-tag">Cloudflare Tunnel</span>
+                    <span class="tool-tag">Linux Administration</span>
+                </div>
+                
+                <a href="https://github.com/Boluwatife06-bit/ssh-project" target="_blank" class="github-button">
+                    <i class="fab fa-github"></i> View on GitHub
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="window glass" id="project2Window">
+        <div class="window-header">
+            <div class="window-title">
+                <i class="fas fa-key"></i>
+                <span>SSH Brute Force Simulation</span>
+            </div>
+            <div class="window-controls">
+                <div class="window-control window-minimize" data-window="project2Window"></div>
+                <div class="window-control window-maximize"></div>
+                <div class="window-control window-close" data-window="project2Window"></div>
+            </div>
+        </div>
+        <div class="window-content">
+            <div class="project-details">
+                <h3>SSH Brute Force Simulation</h3>
+                <p>Simulated SSH brute-force attacks using Hydra and msfconsole on an Ubuntu server to test password strength, logging, and intrusion detection. Implemented countermeasures and documented results to improve server security. This project demonstrates practical understanding of attack vectors and defensive strategies.</p>
+                
+                <h4>Tools Used:</h4>
+                <div class="tools-list">
+                    <span class="tool-tag">Hydra</span>
+                    <span class="tool-tag">msfconsole</span>
+                    <span class="tool-tag">Ubuntu Server</span>
+                    <span class="tool-tag">Fail2Ban</span>
+                    <span class="tool-tag">Bash Scripting</span>
+                    <span class="tool-tag">Log Analysis</span>
+                </div>
+                
+                <a href="https://github.com/Boluwatife06-bit/ssh-project" target="_blank" class="github-button">
+                    <i class="fab fa-github"></i> View on GitHub
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="window glass" id="project3Window">
+        <div class="window-header">
+            <div class="window-title">
+                <i class="fas fa-globe"></i>
+                <span>Web Application Penetration Testing</span>
+            </div>
+            <div class="window-controls">
+                <div class="window-control window-minimize" data-window="project3Window"></div>
+                <div class="window-control window-maximize"></div>
+                <div class="window-control window-close" data-window="project3Window"></div>
+            </div>
+        </div>
+        <div class="window-content">
+            <div class="project-details">
+                <h3>Web Application Penetration Testing Collaboration</h3>
+                <p>Collaborated with a web developer to perform a full-scale penetration test on a live web application. Conducted reconnaissance, vulnerability scanning, directory enumeration, and manual exploitation using industry-standard tools. Identified open directories exposing the database, clickjacking vulnerabilities, and other potential threats. Documented all findings and worked with the developer on remediation.</p>
+                
+                <h4>Tools Used:</h4>
+                <div class="tools-list">
+                    <span class="tool-tag">Burp Suite</span>
+                    <span class="tool-tag">OWASP ZAP</span>
+                    <span class="tool-tag">Nmap</span>
+                    <span class="tool-tag">Nikto</span>
+                    <span class="tool-tag">Gobuster</span>
+                    <span class="tool-tag">SQLmap</span>
+                    <span class="tool-tag">Postman</span>
+                </div>
+                
+                <a href="https://github.com/Boluwatife06-bit/Pentest-Tool" target="_blank" class="github-button">
+                    <i class="fab fa-github"></i> View on GitHub
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="window glass" id="project4Window">
+        <div class="window-header">
+            <div class="window-title">
+                <i class="fas fa-robot"></i>
+                <span>AI Vulnerability Scanner</span>
+            </div>
+            <div class="window-controls">
+                <div class="window-control window-minimize" data-window="project4Window"></div>
+                <div class="window-control window-maximize"></div>
+                <div class="window-control window-close" data-window="project4Window"></div>
+            </div>
+        </div>
+        <div class="window-content">
+            <div class="project-details">
+                <h3>AI Vulnerability Scanner</h3>
+                <p>An intelligent vulnerability scanning tool that leverages machine learning to identify potential security weaknesses in web applications and network infrastructure. The scanner analyzes patterns and anomalies to detect vulnerabilities that might be missed by traditional scanning tools, providing enhanced security assessment capabilities.</p>
+                
+                <h4>Tools & Technologies:</h4>
+                <div class="tools-list">
+                    <span class="tool-tag">Python</span>
+                    <span class="tool-tag">Machine Learning</span>
+                    <span class="tool-tag">Network Scanning</span>
+                    <span class="tool-tag">Web Security</span>
+                    <span class="tool-tag">AI/ML Algorithms</span>
+                    <span class="tool-tag">Security Automation</span>
+                </div>
+                
+                <a href="https://github.com/Boluwatife06-bit/AI-vuln-scanner" target="_blank" class="github-button">
+                    <i class="fab fa-github"></i> View on GitHub
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="window glass" id="project5Window">
+        <div class="window-header">
+            <div class="window-title">
+                <i class="fas fa-terminal"></i>
+                <span>J.A.R.V.I.S AI Kali Terminal</span>
+            </div>
+            <div class="window-controls">
+                <div class="window-control window-minimize" data-window="project5Window"></div>
+                <div class="window-control window-maximize"></div>
+                <div class="window-control window-close" data-window="project5Window"></div>
+            </div>
+        </div>
+        <div class="window-content">
+            <div class="project-details">
+                <h3>J.A.R.V.I.S AI Kali Terminal</h3>
+                <p>An AI-powered terminal assistant for Kali Linux that helps automate penetration testing tasks, provide intelligent recommendations, and streamline security workflows. This project combines cybersecurity expertise with AI to create an interactive assistant that can understand natural language commands and execute appropriate security tools.</p>
+                
+                <h4>Tools & Technologies:</h4>
+                <div class="tools-list">
+                    <span class="tool-tag">Kali Linux</span>
+                    <span class="tool-tag">Python</span>
+                    <span class="tool-tag">Natural Language Processing</span>
+                    <span class="tool-tag">AI Integration</span>
+                    <span class="tool-tag">Bash Scripting</span>
+                    <span class="tool-tag">Security Automation</span>
+                </div>
+                
+                <a href="https://github.com/Boluwatife06-bit/J.A.R.V.I.S_AI.KALI_TERMINAL" target="_blank" class="github-button">
+                    <i class="fab fa-github"></i> View on GitHub
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- App Windows -->
+    <div class="window glass app-window" id="notesWindow">
+        <div class="window-header">
+            <div class="window-title">
+                <i class="fas fa-sticky-note"></i>
+                <span>Notes</span>
+            </div>
+            <div class="window-controls">
+                <div class="window-control window-minimize" data-window="notesWindow"></div>
+                <div class="window-control window-maximize"></div>
+                <div class="window-control window-close" data-window="notesWindow"></div>
+            </div>
+        </div>
+        <div class="window-content notes-app">
+            <textarea id="notesText" placeholder="Type your notes here... They will be saved automatically."></textarea>
+        </div>
+    </div>
+    
+    <div class="window glass app-window" id="terminalWindow">
+        <div class="window-header">
+            <div class="window-title">
+                <i class="fas fa-terminal"></i>
+                <span>Terminal</span>
+            </div>
+            <div class="window-controls">
+                <div class="window-control window-minimize" data-window="terminalWindow"></div>
+                <div class="window-control window-maximize"></div>
+                <div class="window-control window-close" data-window="terminalWindow"></div>
+            </div>
+        </div>
+        <div class="window-content terminal-app">
+            <div class="terminal-output" id="terminalOutput">
+                <div>Kali Terminal v2.1 - Cybersecurity Portfolio</div>
+                <div>Type 'help' for available commands</div>
+                <div>----------------------------------------</div>
+                <div>> Welcome, Security Researcher.</div>
+            </div>
+            <div class="terminal-input">
+                <span class="terminal-prompt">$</span>
+                <input type="text" id="terminalInput" placeholder="Type a command...">
+            </div>
+        </div>
+    </div>
+    
+    <div class="window glass app-window" id="browserWindow">
+        <div class="window-header">
+            <div class="window-title">
+                <i class="fas fa-compass"></i>
+                <span>Browser</span>
+            </div>
+            <div class="window-controls">
+                <div class="window-control window-minimize" data-window="browserWindow"></div>
+                <div class="window-control window-maximize"></div>
+                <div class="window-control window-close" data-window="browserWindow"></div>
+            </div>
+        </div>
+        <div class="window-content browser-app">
+            <div class="browser-url-bar">
+                <input type="text" id="browserUrl" value="https://github.com/Boluwatife06-bit" placeholder="Enter URL...">
+                <button class="browser-go-button" id="browserGo">Go</button>
+            </div>
+            <iframe id="browserFrame" src="https://github.com/Boluwatife06-bit"></iframe>
+        </div>
+    </div>
+    
+    <!-- Start Menu -->
+    <div class="start-menu glass" id="startMenu">
+        <div class="start-menu-content">
+            <div class="start-menu-sidebar">
+                <div class="start-menu-item">
+                    <i class="fas fa-user" style="color: var(--matrix-green); font-size: 1.5rem;"></i>
+                </div>
+                <div class="start-menu-item">
+                    <i class="fas fa-cog" style="color: #cccccc; font-size: 1.5rem;"></i>
+                </div>
+                <div class="start-menu-item">
+                    <i class="fas fa-power-off" style="color: #cccccc; font-size: 1.5rem;"></i>
+                </div>
+            </div>
+            <div class="start-menu-main">
+                <div class="user-profile">
+                    <div class="user-avatar">AB</div>
+                    <div class="user-info">
+                        <h3>Ajayi Boluwatife</h3>
+                        <p>Offensive Security Pentester</p>
+                    </div>
+                </div>
+                
+                <div class="menu-section">
+                    <h4><i class="fas fa-info-circle"></i> About Me</h4>
+                    <p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 15px;">
+                        I am an Offensive Security Pentester who enjoys uncovering vulnerabilities and strengthening systems through hands-on security work. I've built and secured Ubuntu servers, developed and tested an SSH brute-force project to understand attack patterns and improve server security, and collaborated with web developers on practical penetration testing projects.
+                    </p>
+                    <p style="line-height: 1.6; color: var(--text-secondary);">
+                        My focus is on building resilient systems while continually expanding my skills in the rapidly evolving world of cybersecurity.
+                    </p>
+                </div>
+                
+                <div class="menu-section">
+                    <h4><i class="fas fa-tools"></i> Skills & Tools</h4>
+                    <div class="skills-container">
+                        <span class="skill-tag">Linux (Ubuntu Server)</span>
+                        <span class="skill-tag">Kali Linux</span>
+                        <span class="skill-tag">Nmap</span>
+                        <span class="skill-tag">Burp Suite</span>
+                        <span class="skill-tag">Metasploit</span>
+                        <span class="skill-tag">Hydra</span>
+                        <span class="skill-tag">OWASP ZAP</span>
+                        <span class="skill-tag">Wireshark</span>
+                        <span class="skill-tag">Bash Scripting</span>
+                        <span class="skill-tag">Python</span>
+                        <span class="skill-tag">SSH Hardening</span>
+                        <span class="skill-tag">Fail2Ban</span>
+                        <span class="skill-tag">UFW</span>
+                        <span class="skill-tag">IPTables</span>
+                        <span class="skill-tag">John the Ripper</span>
+                        <span class="skill-tag">Hashcat</span>
+                        <span class="skill-tag">SQLmap</span>
+                        <span class="skill-tag">Nikto</span>
+                        <span class="skill-tag">Gobuster</span>
+                        <span class="skill-tag">LinPEAS/WinPEAS</span>
+                        <span class="skill-tag">OWASP Top 10</span>
+                        <span class="skill-tag">MITRE ATT&CK</span>
+                        <span class="skill-tag">Vulnerability Assessment</span>
+                        <span class="skill-tag">Security Reporting</span>
+                    </div>
+                </div>
+                
+                <div class="menu-section">
+                    <h4><i class="fas fa-project-diagram"></i> All Projects</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div>
+                            <div style="color: var(--matrix-green); margin-bottom: 5px;">• Ubuntu Server Security</div>
+                            <div style="color: var(--matrix-green); margin-bottom: 5px;">• SSH Brute Force Simulation</div>
+                            <div style="color: var(--matrix-green); margin-bottom: 5px;">• Web App Penetration Test</div>
+                        </div>
+                        <div>
+                            <div style="color: var(--matrix-green); margin-bottom: 5px;">• AI Vulnerability Scanner</div>
+                            <div style="color: var(--matrix-green); margin-bottom: 5px;">• J.A.R.V.I.S AI Terminal</div>
+                            <div style="color: var(--matrix-green); margin-bottom: 5px;">• Full Hacking Toolkit</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Taskbar -->
+    <div class="taskbar glass" id="taskbar">
+        <div class="start-button" id="startButton">
+            <div class="start-icon">
+                <i class="fab fa-windows"></i>
+            </div>
+            <div class="start-text">Start</div>
+        </div>
+        
+        <div class="taskbar-apps">
+            <div class="taskbar-app" data-window="project1Window">
+                <i class="fas fa-server"></i>
+                <span>Server Security</span>
+            </div>
+            <div class="taskbar-app" data-window="project2Window">
+                <i class="fas fa-key"></i>
+                <span>SSH Brute Force</span>
+            </div>
+            <div class="taskbar-app" data-window="terminalWindow">
+                <i class="fas fa-terminal"></i>
+                <span>Terminal</span>
+            </div>
+            <div class="taskbar-app" data-window="browserWindow">
+                <i class="fas fa-compass"></i>
+                <span>Browser</span>
+            </div>
+        </div>
+        
+        <div class="time-display" id="taskbarTime">22:10</div>
+    </div>
+
+    <script>
+        // Matrix Code Background
+        const canvas = document.getElementById('matrixCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        const chars = "01";
+        const charArray = chars.split("");
+        const fontSize = 14;
+        const columns = canvas.width / fontSize;
+        const drops = [];
+        
+        for(let x = 0; x < columns; x++) {
+            drops[x] = Math.floor(Math.random() * canvas.height / fontSize) * fontSize;
+        }
+        
+        function drawMatrix() {
+            ctx.fillStyle = "rgba(10, 15, 25, 0.05)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = "#00ff41";
+            ctx.font = `${fontSize}px monospace`;
+            
+            for(let i = 0; i < drops.length; i++) {
+                const text = charArray[Math.floor(Math.random() * charArray.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                
+                if(drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                
+                drops[i]++;
+            }
+        }
+        
+        setInterval(drawMatrix, 35);
+        
+        // Update canvas on resize
+        window.addEventListener('resize', function() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+        
+        // DOM Elements
+        const lockScreen = document.getElementById('lockScreen');
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        const desktop = document.getElementById('desktop');
+        const startMenu = document.getElementById('startMenu');
+        const startButton = document.getElementById('startButton');
+        const unlockHint = document.getElementById('unlockHint');
+        const loadingProgress = document.getElementById('loadingProgress');
+        const lockTime = document.getElementById('lockTime');
+        const lockDate = document.getElementById('lockDate');
+        const taskbarTime = document.getElementById('taskbarTime');
+        
+        // Time and Date
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const dateString = now.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            
+            lockTime.textContent = timeString;
+            lockDate.textContent = dateString;
+            taskbarTime.textContent = timeString;
+        }
+        
+        updateTime();
+        setInterval(updateTime, 60000);
+        
+        // Unlock Sequence
+        unlockHint.addEventListener('click', function() {
+            lockScreen.classList.add('hidden');
+            
+            setTimeout(() => {
+                welcomeScreen.classList.remove('hidden');
+                
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += 2;
+                    loadingProgress.style.width = `${progress}%`;
+                    
+                    if(progress >= 100) {
+                        clearInterval(interval);
+                        setTimeout(() => {
+                            welcomeScreen.classList.add('hidden');
+                        }, 500);
+                    }
+                }, 30);
+            }, 300);
+        });
+        
+        // Desktop Icons Interaction
+        const desktopIcons = document.querySelectorAll('.desktop-icon');
+        desktopIcons.forEach(icon => {
+            icon.addEventListener('click', function() {
+                // Remove selected class from all icons
+                desktopIcons.forEach(i => i.classList.remove('selected'));
+                // Add selected class to clicked icon
+                this.classList.add('selected');
+                
+                const windowId = this.getAttribute('data-window');
+                const windowElement = document.getElementById(windowId);
+                
+                if(windowElement) {
+                    // Close all windows first
+                    document.querySelectorAll('.window').forEach(w => {
+                        w.classList.remove('active');
+                    });
+                    
+                    document.querySelectorAll('.app-window').forEach(w => {
+                        w.classList.remove('active');
+                    });
+                    
+                    // Open the selected window
+                    windowElement.classList.add('active');
+                    
+                    // Update taskbar active state
+                    document.querySelectorAll('.taskbar-app').forEach(app => {
+                        app.classList.remove('active');
+                        if(app.getAttribute('data-window') === windowId) {
+                            app.classList.add('active');
+                        }
+                    });
+                }
+            });
+        });
+        
+        // Start Menu Toggle
+        startButton.addEventListener('click', function(e) {
+            e.stopPropagation();
+            startMenu.classList.toggle('active');
+        });
+        
+        // Close Start Menu when clicking outside
+        document.addEventListener('click', function(e) {
+            if(!startMenu.contains(e.target) && !startButton.contains(e.target)) {
+                startMenu.classList.remove('active');
+            }
+        });
+        
+        // Window Controls
+        document.querySelectorAll('.window-close').forEach(button => {
+            button.addEventListener('click', function() {
+                const windowId = this.getAttribute('data-window');
+                document.getElementById(windowId).classList.remove('active');
+                
+                // Remove selected class from desktop icon
+                desktopIcons.forEach(icon => {
+                    if(icon.getAttribute('data-window') === windowId) {
+                        icon.classList.remove('selected');
+                    }
+                });
+                
+                // Remove active class from taskbar app
+                document.querySelectorAll('.taskbar-app').forEach(app => {
+                    if(app.getAttribute('data-window') === windowId) {
+                        app.classList.remove('active');
+                    }
+                });
+            });
+        });
+        
+        document.querySelectorAll('.window-minimize').forEach(button => {
+            button.addEventListener('click', function() {
+                const windowId = this.getAttribute('data-window');
+                document.getElementById(windowId).classList.remove('active');
+                
+                // Remove selected class from desktop icon
+                desktopIcons.forEach(icon => {
+                    if(icon.getAttribute('data-window') === windowId) {
+                        icon.classList.remove('selected');
+                    }
+                });
+            });
+        });
+        
+        // Taskbar Apps
+        document.querySelectorAll('.taskbar-app').forEach(app => {
+            app.addEventListener('click', function() {
+                const windowId = this.getAttribute('data-window');
+                const windowElement = document.getElementById(windowId);
+                
+                if(windowElement) {
+                    // Remove active class from all taskbar apps
+                    document.querySelectorAll('.taskbar-app').forEach(a => {
+                        a.classList.remove('active');
+                    });
+                    
+                    // Add active class to clicked app
+                    this.classList.add('active');
+                    
+                    // Close all windows first
+                    document.querySelectorAll('.window').forEach(w => {
+                        w.classList.remove('active');
+                    });
+                    
+                    document.querySelectorAll('.app-window').forEach(w => {
+                        w.classList.remove('active');
+                    });
+                    
+                    // Open the selected window
+                    windowElement.classList.add('active');
+                    
+                    // Update desktop icon selection
+                    desktopIcons.forEach(icon => {
+                        icon.classList.remove('selected');
+                        if(icon.getAttribute('data-window') === windowId) {
+                            icon.classList.add('selected');
+                        }
+                    });
+                }
+                
+                // Close start menu if open
+                startMenu.classList.remove('active');
+            });
+        });
+        
+        // Make Windows Draggable
+        function makeDraggable(windowElement) {
+            const header = windowElement.querySelector('.window-header');
+            let isDragging = false;
+            let currentX;
+            let currentY;
+            let initialX;
+            let initialY;
+            let xOffset = 0;
+            let yOffset = 0;
+            
+            header.addEventListener('mousedown', dragStart);
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', dragEnd);
+            
+            function dragStart(e) {
+                initialX = e.clientX - xOffset;
+                initialY = e.clientY - yOffset;
+                
+                if(e.target === header || header.contains(e.target)) {
+                    isDragging = true;
+                    
+                    // Bring window to front
+                    document.querySelectorAll('.window').forEach(w => {
+                        w.style.zIndex = 100;
+                    });
+                    document.querySelectorAll('.app-window').forEach(w => {
+                        w.style.zIndex = 200;
+                    });
+                    windowElement.style.zIndex = 300;
+                }
+            }
+            
+            function drag(e) {
+                if(isDragging) {
+                    e.preventDefault();
+                    currentX = e.clientX - initialX;
+                    currentY = e.clientY - initialY;
+                    
+                    xOffset = currentX;
+                    yOffset = currentY;
+                    
+                    setTranslate(currentX, currentY, windowElement);
+                }
+            }
+            
+            function setTranslate(xPos, yPos, el) {
+                el.style.transform = `translate(${xPos}px, ${yPos}px)`;
+            }
+            
+            function dragEnd() {
+                initialX = currentX;
+                initialY = currentY;
+                isDragging = false;
+            }
+        }
+        
+        // Apply draggable to all windows
+        document.querySelectorAll('.window').forEach(windowElement => {
+            makeDraggable(windowElement);
+        });
+        
+        // Notes App - Save to Local Storage
+        const notesText = document.getElementById('notesText');
+        const savedNotes = localStorage.getItem('portfolioNotes');
+        
+        if(savedNotes) {
+            notesText.value = savedNotes;
+        }
+        
+        notesText.addEventListener('input', function() {
+            localStorage.setItem('portfolioNotes', this.value);
+        });
+        
+        // Terminal App
+        const terminalInput = document.getElementById('terminalInput');
+        const terminalOutput = document.getElementById('terminalOutput');
+        
+        terminalInput.addEventListener('keypress', function(e) {
+            if(e.key === 'Enter') {
+                const command = this.value.trim().toLowerCase();
+                this.value = '';
+                
+                let output = '';
+                
+                switch(command) {
+                    case 'help':
+                        output = `
+Available commands:<br>
+• help - Show this help message<br>
+• whoami - Display user information<br>
+• projects - List all cybersecurity projects<br>
+• skills - Show technical skills<br>
+• clear - Clear terminal<br>
+• date - Show current date and time<br>
+• github - Open GitHub profile<br>
+                        `;
+                        break;
+                    
+                    case 'whoami':
+                        output = "User: Ajayi Boluwatife<br>Role: Offensive Security Pentester<br>Specialization: System Security & Vulnerability Assessment";
+                        break;
+                    
+                    case 'projects':
+                        output = `
+Cybersecurity Projects:<br>
+1. Ubuntu Server Build & Security<br>
+2. SSH Brute Force Simulation<br>
+3. Web Application Penetration Testing<br>
+4. AI Vulnerability Scanner<br>
+5. J.A.R.V.I.S AI Kali Terminal<br>
+6. Full Hacking Toolkit<br>
+                        `;
+                        break;
+                    
+                    case 'skills':
+                        output = "Core Skills: Linux Security, Network Pentesting, Web App Security, Vulnerability Assessment, Security Automation, AI in Cybersecurity";
+                        break;
+                    
+                    case 'clear':
+                        terminalOutput.innerHTML = '';
+                        return;
+                    
+                    case 'date':
+                        output = new Date().toString();
+                        break;
+                    
+                    case 'github':
+                        output = "Opening GitHub profile...";
+                        window.open('https://github.com/Boluwatife06-bit', '_blank');
+                        break;
+                    
+                    case '':
+                        return;
+                    
+                    default:
+                        output = `Command not found: ${command}. Type 'help' for available commands.`;
+                }
+                
+                terminalOutput.innerHTML += `<div>$ ${command}</div><div>${output}</div><br>`;
+                terminalOutput.scrollTop = terminalOutput.scrollHeight;
+            }
+        });
+        
+        // Browser App
+        const browserUrl = document.getElementById('browserUrl');
+        const browserFrame = document.getElementById('browserFrame');
+        const browserGo = document.getElementById('browserGo');
+        
+        browserGo.addEventListener('click', function() {
+            let url = browserUrl.value.trim();
+            if(!url.startsWith('http://') && !url.startsWith('https://')) {
+                url = 'https://' + url;
+                browserUrl.value = url;
+            }
+            browserFrame.src = url;
+        });
+        
+        browserUrl.addEventListener('keypress', function(e) {
+            if(e.key === 'Enter') {
+                browserGo.click();
+            }
+        });
+        
+        // Initialize with some windows closed
+        window.addEventListener('load', function() {
+            // Center all windows on load
+            document.querySelectorAll('.window').forEach(windowElement => {
+                windowElement.style.left = '50%';
+                windowElement.style.top = '50%';
+            });
+            
+            // Initialize time immediately
+            updateTime();
+        });
+    </script>
+</body>
+</html>
