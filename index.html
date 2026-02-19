@@ -740,21 +740,38 @@
             <div class="icon-name">J.A.R.V.I.S AI Terminal</div>
         </div>
         
-        <div class="desktop-icon" id="project6" data-window="notesWindow">
+        <!-- NEW: Metadata Harvester -->
+        <div class="desktop-icon" id="project6" data-window="project6Window">
+            <div class="icon-image">
+                <i class="fas fa-search"></i>
+            </div>
+            <div class="icon-name">Metadata Harvester</div>
+        </div>
+        
+        <!-- NEW: SOC Analysis Setup -->
+        <div class="desktop-icon" id="project7" data-window="project7Window">
+            <div class="icon-image">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="icon-name">SOC Analysis Setup</div>
+        </div>
+        
+        <!-- Existing apps (renumbered) -->
+        <div class="desktop-icon" id="project8" data-window="notesWindow">
             <div class="icon-image">
                 <i class="fas fa-sticky-note"></i>
             </div>
             <div class="icon-name">Notes</div>
         </div>
         
-        <div class="desktop-icon" id="project7" data-window="terminalWindow">
+        <div class="desktop-icon" id="project9" data-window="terminalWindow">
             <div class="icon-image">
                 <i class="fas fa-code"></i>
             </div>
             <div class="icon-name">Terminal</div>
         </div>
         
-        <div class="desktop-icon" id="project8" data-window="browserWindow">
+        <div class="desktop-icon" id="project10" data-window="browserWindow">
             <div class="icon-image">
                 <i class="fas fa-compass"></i>
             </div>
@@ -934,7 +951,77 @@
         </div>
     </div>
     
-    <!-- App Windows -->
+    <!-- NEW: Metadata Harvester Window -->
+    <div class="window glass" id="project6Window">
+        <div class="window-header">
+            <div class="window-title">
+                <i class="fas fa-search"></i>
+                <span>Metadata Harvester (Kali Forensic Tool)</span>
+            </div>
+            <div class="window-controls">
+                <div class="window-control window-minimize" data-window="project6Window"></div>
+                <div class="window-control window-maximize"></div>
+                <div class="window-control window-close" data-window="project6Window"></div>
+            </div>
+        </div>
+        <div class="window-content">
+            <div class="project-details">
+                <h3>Metadata Harvester (Kali Forensic Tool)</h3>
+                <p>A custom forensic tool built for Kali Linux to extract and analyze metadata from various file types (images, documents, PDFs) for OSINT and digital forensics purposes. It automates metadata extraction, helping security researchers uncover hidden information and potential vulnerabilities embedded in files.</p>
+                
+                <h4>Tools & Technologies:</h4>
+                <div class="tools-list">
+                    <span class="tool-tag">Kali Linux</span>
+                    <span class="tool-tag">Python</span>
+                    <span class="tool-tag">ExifTool</span>
+                    <span class="tool-tag">Forensics</span>
+                    <span class="tool-tag">OSINT</span>
+                    <span class="tool-tag">Bash Scripting</span>
+                </div>
+                
+                <a href="https://github.com/Boluwatife06-bit" target="_blank" class="github-button">
+                    <i class="fab fa-github"></i> View on GitHub
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- NEW: SOC Analysis Setup Window -->
+    <div class="window glass" id="project7Window">
+        <div class="window-header">
+            <div class="window-title">
+                <i class="fas fa-chart-line"></i>
+                <span>Basic SOC Analysis Setup</span>
+            </div>
+            <div class="window-controls">
+                <div class="window-control window-minimize" data-window="project7Window"></div>
+                <div class="window-control window-maximize"></div>
+                <div class="window-control window-close" data-window="project7Window"></div>
+            </div>
+        </div>
+        <div class="window-content">
+            <div class="project-details">
+                <h3>Basic SOC Analysis Setup</h3>
+                <p>A hands-on Security Operations Center lab environment featuring a centralized logging server (Ubuntu) collecting logs from multiple sources, integrated with a SIEM system for real-time analysis and visualization, and agents on Kali and Ubuntu to forward logs. This project demonstrates practical skills in log management, threat detection, and security monitoring.</p>
+                
+                <h4>Tools & Technologies:</h4>
+                <div class="tools-list">
+                    <span class="tool-tag">Ubuntu Server</span>
+                    <span class="tool-tag">SIEM (e.g., Wazuh/ELK)</span>
+                    <span class="tool-tag">Rsyslog</span>
+                    <span class="tool-tag">Log Analysis</span>
+                    <span class="tool-tag">Kali Linux</span>
+                    <span class="tool-tag">Security Monitoring</span>
+                </div>
+                
+                <a href="https://github.com/Boluwatife06-bit" target="_blank" class="github-button">
+                    <i class="fab fa-github"></i> View on GitHub
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- App Windows (renumbered IDs not needed, they are fixed) -->
     <div class="window glass app-window" id="notesWindow">
         <div class="window-header">
             <div class="window-title">
@@ -1069,10 +1156,12 @@
                             <div style="color: var(--matrix-green); margin-bottom: 5px;">• Ubuntu Server Security</div>
                             <div style="color: var(--matrix-green); margin-bottom: 5px;">• SSH Brute Force Simulation</div>
                             <div style="color: var(--matrix-green); margin-bottom: 5px;">• Web App Penetration Test</div>
+                            <div style="color: var(--matrix-green); margin-bottom: 5px;">• AI Vulnerability Scanner</div>
                         </div>
                         <div>
-                            <div style="color: var(--matrix-green); margin-bottom: 5px;">• AI Vulnerability Scanner</div>
                             <div style="color: var(--matrix-green); margin-bottom: 5px;">• J.A.R.V.I.S AI Terminal</div>
+                            <div style="color: var(--matrix-green); margin-bottom: 5px;">• Metadata Harvester</div>
+                            <div style="color: var(--matrix-green); margin-bottom: 5px;">• SOC Analysis Setup</div>
                             <div style="color: var(--matrix-green); margin-bottom: 5px;">• Full Hacking Toolkit</div>
                         </div>
                     </div>
@@ -1098,6 +1187,14 @@
             <div class="taskbar-app" data-window="project2Window">
                 <i class="fas fa-key"></i>
                 <span>SSH Brute Force</span>
+            </div>
+            <div class="taskbar-app" data-window="project6Window">
+                <i class="fas fa-search"></i>
+                <span>Metadata</span>
+            </div>
+            <div class="taskbar-app" data-window="project7Window">
+                <i class="fas fa-chart-line"></i>
+                <span>SOC Lab</span>
             </div>
             <div class="taskbar-app" data-window="terminalWindow">
                 <i class="fas fa-terminal"></i>
@@ -1447,7 +1544,9 @@ Cybersecurity Projects:<br>
 3. Web Application Penetration Testing<br>
 4. AI Vulnerability Scanner<br>
 5. J.A.R.V.I.S AI Kali Terminal<br>
-6. Full Hacking Toolkit<br>
+6. Metadata Harvester (Kali Forensic Tool)<br>
+7. Basic SOC Analysis Setup<br>
+8. Full Hacking Toolkit<br>
                         `;
                         break;
                     
